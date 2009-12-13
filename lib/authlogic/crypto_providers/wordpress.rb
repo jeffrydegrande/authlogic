@@ -6,6 +6,8 @@ module Authlogic
         ITOA64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
         def matches?(crypted, *tokens)
+          return false if !password_from_wordpress?(crypted)
+
           stretches = 1 << ITOA64.index(crypted[3,1])
           plain, salt = *tokens 
           hashed = Digest::MD5.digest(salt+plain)
@@ -36,6 +38,11 @@ module Authlogic
             output += ITOA64[(value >> 18) & 0x3f,1]
           end
           output
+        end
+
+        private
+        def password_from_wordpress?(crypted)
+          crypted.starts_with?('$P$') && crypted.length == 34
         end
       end
     end
